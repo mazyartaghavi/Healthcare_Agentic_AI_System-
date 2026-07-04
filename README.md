@@ -1,4 +1,4 @@
-# Healthcare Agentic AI System — Starter Foundation
+# Healthcare Agentic AI System
 
 This package implements the first project increment:
 
