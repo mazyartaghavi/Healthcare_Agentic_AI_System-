@@ -1,0 +1,38 @@
+# Reference environment: CPython 3.10-3.13
+# Compatibility-pinned starter stack, reviewed 2026-07-04.
+
+# API and configuration
+fastapi==0.139.0
+uvicorn[standard]==0.50.0
+pydantic==2.13.4
+pydantic-settings==2.14.2
+httpx==0.28.1
+python-multipart==0.0.20
+PyYAML==6.0.2
+
+# Persistence and security
+SQLAlchemy==2.0.51
+alembic==1.16.5
+psycopg[binary]==3.2.9
+cryptography==49.0.0
+PyJWT[crypto]==2.13.0
+
+# Voice: local microphone, local STT, offline system TTS
+sounddevice==0.5.5
+soundfile==0.14.0
+faster-whisper==1.2.1
+pyttsx3==2.99
+
+# RAG and embeddings (used by later modules)
+chromadb==1.5.9
+sentence-transformers==5.6.0
+
+# Reinforcement learning (used by later modules)
+gymnasium==1.3.0
+stable-baselines3==2.9.0
+torch==2.12.1
+
+# Testing
+pytest==9.1.1
+pytest-asyncio==1.4.0
+pytest-cov==7.1.0
