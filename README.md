@@ -1,88 +1,169 @@
-# Healthcare Agentic AI System
+# Healthcare Agentic AI System with Reinforcement Learning
 
-This package implements the first project increment:
+A complete **synthetic-data research demonstration** combining voice input,
+safe conversational orchestration, minimum-necessary mock EHR access, approved
+local retrieval-augmented generation, appointment booking, a FastAPI service,
+and constrained tabular Q-learning.
 
-- system architecture and safety boundaries;
-- a versioned Python dependency set;
-- microphone capture;
-- local speech-to-text through `faster-whisper`;
-- offline operating-system text-to-speech through `pyttsx3`;
-- provider-independent interfaces and unit tests.
+> **Safety notice:** This is not a medical device. It does not diagnose,
+> prescribe, give dosage advice, or replace emergency services or clinicians.
+> Never enter real patient data, credentials, recordings, or API secrets.
 
-It does **not** diagnose, prescribe, or access a real EHR. Use only synthetic
-records until clinical, privacy, security, and regulatory reviews are complete.
+## What now works
 
-## Recommended environment
+- local microphone recording, Whisper STT, and offline TTS;
+- deterministic emergency escalation outside the LLM/RL policy;
+- intent recognition for consultation and appointment workflows;
+- synthetic EHR retrieval with consent and field allow-listing;
+- approved local knowledge retrieval with source references;
+- deterministic safe response composer and optional local Ollama adapter;
+- SQLAlchemy/SQLite appointment listing and idempotent confirmed booking;
+- append-only hash-chained audit events;
+- constrained Q-learning training, evaluation, save, and load;
+- FastAPI endpoints, Docker files, and automated tests.
 
-Use CPython 3.11 or 3.12. Python 3.10 is supported by the selected packages, but
-3.11 is the reference development target.
+## Install in your existing Anaconda environment
 
-```bash
-python -m venv .venv
-# Windows PowerShell
-.venv\Scripts\Activate.ps1
-# Linux/macOS
-source .venv/bin/activate
+Open Jupyter Notebook in the project folder. In a new cell run:
 
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-pip install -e .
+```python
+%pip install -r requirements.txt
+%pip install -e .
 ```
 
-Linux TTS may also require the system `espeak-ng` package. Microphone recording
-requires a working PortAudio input device. The first real STT run downloads the
-selected Whisper model.
+Then use **Kernel → Restart**.
 
-## Run a dependency-light smoke test
+## Run all tests
 
-This path skips microphone and STT model loading but exercises the response/TTS
-pipeline:
-
-```bash
-python -m healthcare_ai_agent.voice.demo \
-  --simulate-text "I need to arrange an appointment"
+```python
+!python -m pytest -v
 ```
 
-Speak the approved disclaimer:
+## End-to-end appointment demonstration in Jupyter
 
-```bash
-python -m healthcare_ai_agent.voice.demo \
-  --simulate-text "I need to arrange an appointment" \
-  --speak
+Text workflow:
+
+```python
+!python -m healthcare_ai_agent.demo --demo-booking
 ```
 
-## Record and transcribe five seconds
+Complete simulated voice-agent pipeline (typed transcript → orchestrator → booking):
 
-```bash
-python -m healthcare_ai_agent.voice.demo \
-  --record-seconds 5 \
-  --model small \
-  --language en
+```python
+!python -m healthcare_ai_agent.voice_agent_demo \
+    --simulate-text "I need an appointment" \
+    --confirm-first-slot
 ```
 
-## Transcribe an existing file
+Microphone → Whisper → orchestrator → spoken response:
 
-```bash
-python -m healthcare_ai_agent.voice.demo \
-  --audio path/to/sample.wav \
-  --model small
+```python
+!python -m healthcare_ai_agent.voice_agent_demo \
+    --record-seconds 5 \
+    --model tiny \
+    --language en \
+    --speak
 ```
 
-## Run tests
+The first turn offers available synthetic slots. The second turn simulates an
+explicit patient confirmation and creates a synthetic SQLite booking.
 
-```bash
-pytest --cov=healthcare_ai_agent --cov-report=term-missing
+## Safe consultation with mock EHR and local RAG
+
+```python
+!python -m healthcare_ai_agent.demo     --patient-id SYN-1001     --message "I have a medication question"     --consent
 ```
 
-The tests use deterministic STT/TTS doubles and do not need a microphone, model
-download, or cloud API.
+## Emergency-gate demonstration
 
-## Files
+```python
+!python -m healthcare_ai_agent.demo     --message "I cannot breathe"
+```
 
-- `docs/ARCHITECTURE.md`: components, trust boundaries, sequence diagram, and RL constraints.
-- `requirements.txt`: pinned reference dependencies.
-- `src/healthcare_ai_agent/voice/recorder.py`: microphone capture.
-- `src/healthcare_ai_agent/voice/speech_to_text.py`: faster-whisper adapter.
-- `src/healthcare_ai_agent/voice/text_to_speech.py`: pyttsx3 adapter.
-- `src/healthcare_ai_agent/voice/service.py`: composable voice service.
-- `tests/test_voice.py`: hardware-independent unit tests.
+The system must escalate immediately and must not retrieve EHR data.
+
+## Train the constrained RL workflow policy
+
+```python
+!python -m healthcare_ai_agent.rl.trainer     --episodes 5000     --output runtime/workflow_policy.json
+```
+
+The expected evaluation contains `unsafe_actions: 0` and maps `EMERGENCY` to
+`ESCALATE_TO_HUMAN`.
+
+## Run the API
+
+In an Anaconda terminal opened in the project folder:
+
+```bash
+uvicorn healthcare_ai_agent.api.app:app --reload
+```
+
+Open `http://127.0.0.1:8000/docs` in your browser for the interactive API.
+
+Example request body for `POST /consult`:
+
+```json
+{
+  "patient_id": "SYN-1001",
+  "message": "I need an appointment",
+  "consent_to_access_ehr": false,
+  "preferred_specialty": "general practice",
+  "confirm_booking": false
+}
+```
+
+## Optional Ollama integration
+
+The safe deterministic `TemplateLLM` is the default. To use a locally installed
+Ollama server, set:
+
+```text
+HEALTHCARE_AGENT_LLM_PROVIDER=ollama
+HEALTHCARE_AGENT_OLLAMA_MODEL=gemma3:4b
+```
+
+Ollama output remains bounded by the deterministic emergency, access, and action
+controls. Do not send real patient information to an unapproved model.
+
+## Docker
+
+```bash
+docker compose up --build
+```
+
+Docker runs the text/API demonstration. Host microphone and operating-system TTS
+are intentionally not configured inside the default container.
+
+## Repository structure
+
+```text
+healthcare_ai_agent_starter/
+├── config/
+├── data/
+├── docs/
+├── notebooks/
+├── src/healthcare_ai_agent/
+│   ├── actions/
+│   ├── api/
+│   ├── conversation/
+│   ├── ehr/
+│   ├── rag/
+│   ├── rl/
+│   ├── safety/
+│   └── voice/
+├── tests/
+├── Dockerfile
+├── docker-compose.yml
+├── main.py
+├── pyproject.toml
+└── requirements.txt
+```
+
+## Production limitations
+
+The repository uses fictional records and local administrative guidance. Real
+healthcare deployment requires governed FHIR integration, clinical validation,
+identity verification, authorization, encryption and key management, consent
+records, secure audit infrastructure, human-oversight procedures, monitoring,
+incident response, and jurisdiction-specific legal and regulatory review.
