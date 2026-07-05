@@ -1,0 +1,15 @@
+README.md
+pyproject.toml
+src/healthcare_ai_agent/__init__.py
+src/healthcare_ai_agent.egg-info/PKG-INFO
+src/healthcare_ai_agent.egg-info/SOURCES.txt
+src/healthcare_ai_agent.egg-info/dependency_links.txt
+src/healthcare_ai_agent.egg-info/top_level.txt
+src/healthcare_ai_agent/voice/__init__.py
+src/healthcare_ai_agent/voice/base.py
+src/healthcare_ai_agent/voice/demo.py
+src/healthcare_ai_agent/voice/recorder.py
+src/healthcare_ai_agent/voice/service.py
+src/healthcare_ai_agent/voice/speech_to_text.py
+src/healthcare_ai_agent/voice/text_to_speech.py
+tests/test_voice.py
